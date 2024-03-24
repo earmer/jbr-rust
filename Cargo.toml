@@ -1,0 +1,49 @@
+[package]
+name = "jetbra-server"
+version = "0.1.0"
+edition = "2021"
+authors = ["novice88"]
+
+[dependencies]
+actix = "0.13.3"
+actix-cors = "0.7.0"
+md-5 = "0.10.6"
+
+
+[dependencies.actix-web]
+version = "4.4.1"
+
+[dependencies.base64]
+version = "0.21.7"
+
+
+[dependencies.sha1]
+version = "0.10.6"
+
+[dependencies.rsa]
+version = "0.9.6"
+features = ["pem", "sha1", "pkcs5", "std"]
+
+
+[dependencies.serde]
+version = "1.0.196"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0.112"
+
+
+[dependencies.x509-parser]
+version = "0.15.1"
+
+[dependencies.rand]
+version = "0.8.1"
+
+[dependencies.mime]
+ version= "0.3.17"
+
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
