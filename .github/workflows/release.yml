@@ -22,6 +22,6 @@ jobs:
       uses: rust-build/rust-build.action@v1.4.5
       with:
         # Output target
-        RUSTTARGET: x86_64-unknown-linux-gnu
+        RUSTTARGET: x86_64-unknown-linux-musl
         
               
