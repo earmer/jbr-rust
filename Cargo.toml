@@ -1,8 +1,8 @@
 [package]
 name = "jetbra-server"
-version = "0.1.0"
-edition = "2021"
-authors = ["novice88"]
+version = "0.3.0"
+edition = "2024"
+authors = ["novice88", "Earmer Carey"]
 
 [dependencies]
 actix = "0.13.3"
