@@ -1,9 +1,8 @@
-# .github/workflows/release.yml
+# Create Release
 
 on:
   release:
     types: [created]
-
 
 jobs:
   release:
@@ -21,6 +20,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           RUSTTARGET: ${{ matrix.target }}
-
-        
-              
+          EXTRA_FILES: "readme.md LICENSE"
