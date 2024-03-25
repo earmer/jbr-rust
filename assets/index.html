@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Generate License</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
     <style>
         .jetbra-button {
             background-color: #04AA6D;
@@ -561,7 +562,7 @@
         <script>
             document.getElementById('saveBtn').addEventListener('click', function() {
                 var editedContent = document.getElementById('useredit').innerText;
-                editedContent = editedContent.replace(/\s/g, '').replace(/\'/g, "").replace(/\"/g, "").replace(/\[/g,"").replace(/\]/g, "").replace(/\{/g,"").replace(/\}/g,"").toUpperCase();
+                editedContent = editedContent.replace(/\s/g, '').replace(/'/g, "").replace(/"/g, "").replace(/\[/g,"").replace(/]/g, "").replace(/\{/g,"").replace(/}/g,"").toUpperCase();
                 document.getElementById('useredit').innerText = editedContent;
                 document.getElementById('user').setAttribute('data-product-codes', editedContent);
                 console.log("modified");
@@ -940,10 +941,58 @@
             },
             body: JSON.stringify(data)
         }).then(response => response.json())
-        navigator.clipboard.writeText(resp.license)
-            .then(() => {
-                alert("The activation code has been copied to your clipboard");
-            })
+        copyToClipboard(resp.license);
+    }
+
+    function copyToClipboard(text) {
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        if (navigator.clipboard && !isSafari) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    alert("The activation code has been copied to your clipboard");
+                })
+                .catch((error) => {
+                    console.error('Error copying text to clipboard:', error);
+                });
+        } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            // textArea.style.background = "transparent";
+            textArea.style.position = "absolute";
+            textArea.style.top = "50%";
+            textArea.style.left = "50%";
+            textArea.style.transform = "translate(-50%, -50%)";
+            textArea.style.fontFamily = "monospace";
+            textArea.style.width = "40em";
+            textArea.style.height = "32em";
+            textArea.style.borderRadius = "10px";
+            textArea.style.color = "white";
+            textArea.style.background = "rgb(50, 50, 50)";
+
+            const closeButton = document.createElement('button');
+            closeButton.innerText = 'Close';
+            closeButton.style.position = "absolute";
+            closeButton.style.top = "20em";
+            closeButton.style.right = "46em";
+            closeButton.style.padding = "5px 10px";
+            closeButton.style.border = "none";
+            closeButton.style.borderRadius = "5px";
+            closeButton.style.background = "gray";
+            closeButton.style.color = "white";
+            closeButton.style.cursor = "pointer";
+
+            closeButton.addEventListener('click', () => {
+                document.body.removeChild(textArea);
+                document.body.removeChild(closeButton);
+            });
+
+            document.body.appendChild(textArea);
+            document.body.appendChild(closeButton);
+            textArea.select();
+            // document.execCommand('copy');
+            // document.body.removeChild(textArea);
+            alert("Press ⌘ + C in the next text area.");
+        }
     }
 </script>
 </body>
