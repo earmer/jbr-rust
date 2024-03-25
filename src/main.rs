@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use actix_web::{App, HttpRequest, HttpResponse, HttpServer, web};
+use actix_web::{App, HttpResponse, HttpServer, web};
 use actix_cors::Cors;
 use base64::Engine;
 use base64::engine::general_purpose;
@@ -24,40 +24,6 @@ const RSA_PRIVATE_KEY: &'static str = include_str!("../jetbra.key");
 const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 use md5::{Digest, Md5};
-use std::sync::{Arc, RwLock};
-use std::collections::HashMap;
-use std::time::{Instant, Duration};
-
-// Assuming a simplified License struct for demonstration purposes
-#[derive(Serialize)]
-// Shared state to track IP request timestamps
-struct RateLimiter {
-    requests: RwLock<HashMap<String, Vec<Instant>>>,
-}
-impl RateLimiter {
-    fn new() -> Self {
-        RateLimiter {
-            requests: RwLock::new(HashMap::new()),
-        }
-    }
-    // Check if the IP has exceeded the rate limit
-    fn check_rate_limit(&self, ip: &str) -> bool {
-        let mut requests = self.requests.write().unwrap();
-        // Clean-up old requests (older than 1 minute)
-        let now = Instant::now();
-        requests.entry(ip.to_string()).or_insert_with(Vec::new).retain(|&t| now.duration_since(t) < Duration::from_secs(60));
-        // Check the number of requests in the last minute
-        if let Some(times) = requests.get(ip) {
-            if times.len() >= 10 {
-                // Rate limit exceeded
-                return true;
-            }
-        }
-        // Record the new request
-        requests.entry(ip.to_string()).or_insert_with(Vec::new).push(now);
-        false
-    }
-}
 
 fn md5(input: &str) -> String {
     let mut hasher = Md5::new();
@@ -68,11 +34,8 @@ fn md5(input: &str) -> String {
     format!("{:x}", result)
 }
 
-pub async fn generate_license(req: HttpRequest, web::Json(mut license): web::Json<License>, rate_limiter: web::Data<Arc<RateLimiter>>) -> Result<HttpResponse, Box<dyn Error>> {
-    let ip = req.peer_addr().map_or_else(|| "unknown".to_string(), |addr| addr.ip().to_string());
-    if rate_limiter.check_rate_limit(&ip) {
-        return Ok(HttpResponse::TooManyRequests().json( json!({"license": "Too Many Requests in 1 Minute!" }).to_string()));
-    }
+pub async fn generate_license(web::Json(mut license): web::Json<License>) -> Result<HttpResponse, Box<dyn Error>> {
+
     // 1 generate license id
     let mut rng = rand::thread_rng();
     let license_id: String = (0..10)
@@ -110,7 +73,8 @@ pub async fn generate_license(req: HttpRequest, web::Json(mut license): web::Jso
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!("Starting Server...");
+    let address = "0.0.0.0:12306";
+    println!("Starting Server at port {}", address);
     HttpServer::new(|| {
         App::new()
             .wrap(
@@ -121,7 +85,7 @@ async fn main() -> std::io::Result<()> {
             .route("/images/icons.svg", web::get().to(|| async { HttpResponse::Ok().content_type(mime::IMAGE_SVG).body(ICONS) }))
             .route("/generateLicense", web::post().to(generate_license))
     })
-        .bind("0.0.0.0:12306")?
+        .bind(address)?
         .run()
         .await
 }
